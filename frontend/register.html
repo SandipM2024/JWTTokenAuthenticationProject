@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Authentication</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .form-container { margin: 20px; }
+        .form-container input { display: block; margin: 10px 0; padding: 8px; width: 300px; }
+        .form-container button { padding: 8px 16px; }
+        .message { color: red; }
+    </style>
+</head>
+<body>
+
+    <h1>User Authentication</h1>
+
+    <!-- Registration Form -->
+    <div class="form-container" id="registrationForm">
+        <h2>Register</h2>
+        <input type="text" id="registerName" placeholder="Name" required />
+        <input type="email" id="registerEmail" placeholder="Email" required />
+        <input type="password" id="registerPassword" placeholder="Password" required />
+        <input type="password" id="registerPassword2" placeholder="Confirm Password" required />
+        <button id="registerButton">Register</button>
+        <div id="registerMessage" class="message"></div>
+    </div>
+
+    <!-- Login Form -->
+    <div class="form-container" id="loginForm">
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email" required />
+        <input type="password" id="loginPassword" placeholder="Password" required />
+        <button id="loginButton">Login</button>
+        <div id="loginMessage" class="message"></div>
+    </div>
+    
+
+    <script>
+        // Registration function
+        function registerUser() {
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const password2 = document.getElementById('registerPassword2').value;
+
+            // Check if passwords match
+            if (password !== password2) {
+                document.getElementById('registerMessage').innerText = 'Passwords do not match.';
+                return;
+            }
+
+            axios.post('http://127.0.0.1:8000/api/user/register/', {
+                name: name,
+                email: email,
+                password: password
+            })
+            .then(response => {
+                document.getElementById('registerMessage').innerText = 'Registration Successful!';
+                document.getElementById('registerMessage').style.color = 'green';  // Change message color
+            })
+            .catch(error => {
+                document.getElementById('registerMessage').innerText = 'Error: ' + (error.response?.data?.error || 'An error occurred.');
+            });
+        }
+
+        // Login function
+        function loginUser() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            axios.post('http://127.0.0.1:8000/api/user/login/', {
+                email: email,
+                password: password
+            })
+            .then(response => {
+                // Store tokens in localStorage
+                const { access, refresh } = response.data.token; // Ensure your API returns the token structure
+                localStorage.setItem('access_token', access);
+                localStorage.setItem('refresh_token', refresh);
+                document.getElementById('loginMessage').innerText = 'Login Successful!';
+                document.getElementById('loginMessage').style.color = 'green';  // Change message color
+                // Optionally redirect to profile or another page
+            })
+            .catch(error => {
+                document.getElementById('loginMessage').innerText = 'Error: ' + (error.response?.data?.non_field_errors || 'An error occurred.');
+            });
+        }
+
+        // Attach event listeners to buttons
+        document.getElementById('registerButton').addEventListener('click', registerUser);
+        document.getElementById('loginButton').addEventListener('click', loginUser);
+    </script>
+
+</body>
+</html>

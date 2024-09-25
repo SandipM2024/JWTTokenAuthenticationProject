@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f8f9fa; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        h1 { 
+            color: #333; 
+        }
+        button { 
+            padding: 10px 15px; 
+            margin-top: 10px; 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
+        button:hover { 
+            background-color: #0056b3; 
+        }
+        #profileData { 
+            margin-top: 20px; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 5px; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+        }
+        pre { 
+            background: #f4f4f4; 
+            padding: 10px; 
+            border-radius: 5px; 
+            overflow-x: auto; 
+        }
+    </style>
+</head>
+<body>
+
+    <h1>User Profile</h1>
+    <button id="fetchProfileButton">Fetch User Profile</button>
+    <div id="profileData"></div>
+
+    <script>
+        // Function to fetch user profile data
+        function fetchUserProfile() {
+            const accessToken = localStorage.getItem('access_token');
+            const refreshToken = localStorage.getItem('refresh_token');
+            // console.log(accessToken)
+            // console.log(refreshToken)
+            // Check if tokens are available
+            if (!accessToken) {
+                alert('You are not logged in. Please log in to access your profile.');
+                return;
+            }
+
+            axios.get('http://127.0.0.1:8000/api/user/profile/', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`, // Access token
+                    'X-Refresh-Token': refreshToken, // Refresh token
+                    'Content-Type':'application/json'
+                }
+            })
+            .then(response => {
+                // Check for a new access token in the response headers
+
+                const newAccessToken = response.data['new-access-token'];
+                console.log(response.data["new-access-token"], " : new")
+                if (newAccessToken) {
+                    localStorage.setItem('access_token', newAccessToken); // Update stored access token
+                }
+
+                // Display the user profile data
+                const profileDataDiv = document.getElementById('profileData');
+                profileDataDiv.innerHTML = `<pre>${JSON.stringify(response.data, null, 2)}</pre>`; // Format the data for display
+            })
+            .catch(error => {
+                // Handle errors such as token expiration or invalid tokens
+                console.error('Error fetching user profile:', error);
+
+                if (error.response && error.response.status === 401) {
+                    // Token expired or invalid, handle logout or token refresh
+                    alert('Your session has expired. Please log in again.'); 
+                    // Optionally redirect to login page or refresh the token
+                } else {
+                    // Handle other potential errors
+                    alert('An error occurred while fetching the profile. Please try again later.');
+                }
+            });
+        }
+
+        // Attach the fetchUserProfile function to the button click event
+        document.getElementById('fetchProfileButton').addEventListener('click', fetchUserProfile);
+    </script>
+
+   
+</body>
+</html> 
