@@ -21,7 +21,7 @@ python manage.py runserver
 API Testing Propose HTML Template
 -------------------------------------
 Registration and Login 
-![alt text](loginregistations.png)
+![alt text](loginregistation.png)
 
 User Profile
 
